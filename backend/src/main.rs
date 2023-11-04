@@ -18,6 +18,21 @@ async fn get_stores(State(pool): State<PgPool>) -> Json<Vec<Store>> {
     )
 }
 
+#[derive(Serialize, FromRow)]
+struct Goods {
+    id: Uuid,
+    name: String,
+}
+
+async fn get_goods(State(pool): State<PgPool>) -> Json<Vec<Goods>> {
+    Json(
+        sqlx::query_as("SELECT * from goods")
+            .fetch_all(&pool)
+            .await
+            .unwrap(),
+    )
+}
+
 #[tokio::main]
 async fn main() {
     let pool = PgPoolOptions::new()
@@ -28,6 +43,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/stores", get(get_stores))
+        .route("/goods", get(get_goods))
         .with_state(pool);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
