@@ -1,10 +1,11 @@
 use axum::{extract::State, routing::get, Json, Router};
 use serde::Serialize;
 use sqlx::{postgres::PgPoolOptions, FromRow, PgPool};
+use uuid::Uuid;
 
 #[derive(Serialize, FromRow)]
 struct Store {
-    id: String,
+    id: Uuid,
     name: String,
 }
 
