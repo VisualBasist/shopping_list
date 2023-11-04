@@ -14,6 +14,7 @@ async fn get_stores(State(pool): State<PgPool>) -> Json<Vec<Store>> {
         sqlx::query_as("SELECT * from stores")
             .fetch_all(&pool)
             .await
+            // TODO: エラー処理
             .unwrap(),
     )
 }
@@ -29,6 +30,7 @@ async fn get_goods(State(pool): State<PgPool>) -> Json<Vec<Goods>> {
         sqlx::query_as("SELECT * from goods")
             .fetch_all(&pool)
             .await
+            // TODO: エラー処理
             .unwrap(),
     )
 }
