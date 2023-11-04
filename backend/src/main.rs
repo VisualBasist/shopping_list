@@ -1,10 +1,12 @@
 use axum::{
     extract::{Path, State},
+    http::HeaderValue,
     routing::get,
     Json, Router,
 };
 use serde::Serialize;
 use sqlx::{postgres::PgPoolOptions, FromRow, PgPool};
+use tower_http::cors::CorsLayer;
 use uuid::Uuid;
 
 #[derive(Serialize, FromRow)]
@@ -65,9 +67,12 @@ async fn main() {
         .route("/stores", get(get_stores))
         .route("/goods", get(get_goods))
         .route("/stores/:store_id/goods", get(get_store_goods))
+        .layer(
+            CorsLayer::new().allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap()),
+        )
         .with_state(pool);
 
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
