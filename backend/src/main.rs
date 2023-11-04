@@ -1,4 +1,8 @@
-use axum::{extract::State, routing::get, Json, Router};
+use axum::{
+    extract::{Path, State},
+    routing::get,
+    Json, Router,
+};
 use serde::Serialize;
 use sqlx::{postgres::PgPoolOptions, FromRow, PgPool};
 use uuid::Uuid;
@@ -35,6 +39,20 @@ async fn get_goods(State(pool): State<PgPool>) -> Json<Vec<Goods>> {
     )
 }
 
+async fn get_store_goods(
+    Path(store_id): Path<Uuid>,
+    State(pool): State<PgPool>,
+) -> Json<Vec<Goods>> {
+    Json(
+        sqlx::query_as("SELECT goods.* FROM store_goods JOIN goods ON goods.id = store_goods.goods_id WHERE store_id = $1")
+            .bind(store_id)
+            .fetch_all(&pool)
+            .await
+            // TODO: エラー処理
+            .unwrap(),
+    )
+}
+
 #[tokio::main]
 async fn main() {
     let pool = PgPoolOptions::new()
@@ -46,6 +64,7 @@ async fn main() {
     let app = Router::new()
         .route("/stores", get(get_stores))
         .route("/goods", get(get_goods))
+        .route("/stores/:store_id/goods", get(get_store_goods))
         .with_state(pool);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
