@@ -1,4 +1,5 @@
 'use client'
+import { CircularProgress } from '@mui/material';
 import useSWR from 'swr';
 
 type StoreItem = { id: string, name: string, price?: number };
@@ -8,7 +9,7 @@ export default function Page({ params }: { params: { store_id: string } }) {
     return (
         <main>
             {error && <p>{error.message}</p>}
-            {isLoading && <p>読み込み中</p>}
+            {isLoading && <CircularProgress />}
             {store_items &&
                 <ul>
                     {store_items.map(x => <li key={x.id}>{x.name}{x.price && <span>単価{x.price}</span>}</li>)}
