@@ -26,14 +26,14 @@ async fn get_stores(State(pool): State<PgPool>) -> Json<Vec<Store>> {
 }
 
 #[derive(Serialize, FromRow)]
-struct Goods {
+struct Item {
     id: Uuid,
     name: String,
 }
 
-async fn get_goods(State(pool): State<PgPool>) -> Json<Vec<Goods>> {
+async fn get_items(State(pool): State<PgPool>) -> Json<Vec<Item>> {
     Json(
-        sqlx::query_as("SELECT * from goods")
+        sqlx::query_as("SELECT * from items")
             .fetch_all(&pool)
             .await
             // TODO: エラー処理
@@ -41,12 +41,12 @@ async fn get_goods(State(pool): State<PgPool>) -> Json<Vec<Goods>> {
     )
 }
 
-async fn get_store_goods(
+async fn get_store_items(
     Path(store_id): Path<Uuid>,
     State(pool): State<PgPool>,
-) -> Json<Vec<Goods>> {
+) -> Json<Vec<Item>> {
     Json(
-        sqlx::query_as("SELECT goods.* FROM store_goods JOIN goods ON goods.id = store_goods.goods_id WHERE store_id = $1")
+        sqlx::query_as("SELECT items.* FROM store_items JOIN items ON items.id = store_items.item_id WHERE store_id = $1")
             .bind(store_id)
             .fetch_all(&pool)
             .await
@@ -65,8 +65,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/stores", get(get_stores))
-        .route("/goods", get(get_goods))
-        .route("/stores/:store_id/goods", get(get_store_goods))
+        .route("/items", get(get_items))
+        .route("/stores/:store_id/items", get(get_store_items))
         .layer(
             CorsLayer::new().allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap()),
         )
