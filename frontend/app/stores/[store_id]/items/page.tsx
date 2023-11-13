@@ -1,12 +1,18 @@
 'use client'
 import useSWR from 'swr';
-import { CircularProgress, List, ListItem } from '@mui/material';
+import { Checkbox, CircularProgress, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import styles from './page.module.css'
 
 type StoreItem = { id: string, name: string, is_done: boolean, price?: number };
 
 function StoreListItem(items: StoreItem[]) {
-    return items.map(x => <ListItem key={x.id}>{x.name}{x.price && <span>単価{x.price}</span>}</ListItem>);
+    return items.map(x =>
+        <ListItem key={x.id}>
+            <ListItemIcon onClick={() => console.log(x)}>
+                <Checkbox edge="start" checked={x.is_done} disableRipple />
+            </ListItemIcon>
+            <ListItemText primary={x.name} secondary={x.price && <div><span>単価</span><span>{x.price}</span></div>} />
+        </ListItem>);
 }
 
 export default function Page({ params }: { params: { store_id: string } }) {
