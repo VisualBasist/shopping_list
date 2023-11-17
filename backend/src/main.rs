@@ -55,7 +55,11 @@ async fn get_store_items(
     State(pool): State<PgPool>,
 ) -> Json<Vec<StoreItem>> {
     Json(
-        sqlx::query_as("SELECT items.name, store_items.store_id, store_items.item_id, store_items.is_done, store_items.price FROM store_items JOIN items ON items.id = store_items.item_id WHERE store_id = $1")
+        sqlx::query_as("SELECT items.name, store_items.store_id, store_items.item_id, store_items.is_done, store_items.price
+FROM store_items
+JOIN items ON items.id = store_items.item_id
+WHERE store_id = $1
+ORDER BY order_number")
             .bind(store_id)
             .fetch_all(&pool)
             .await
