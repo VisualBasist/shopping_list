@@ -1,5 +1,8 @@
 .main {
   display: flex;
   flex-direction: column;
+}
+
+.list{
   max-width: 20rem;
 }

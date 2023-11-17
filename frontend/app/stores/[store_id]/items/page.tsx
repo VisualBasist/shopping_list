@@ -61,11 +61,11 @@ export default function Page({ params }: { params: { store_id: string } }) {
             {store_items &&
                 <>
                     <h1>買う</h1>
-                    <List>
+                    <List className={styles.list}>
                         {StoreListItem(store_items.filter(x => !x.is_done), mutate)}
                     </List>
                     <h1>買った</h1>
-                    <List>
+                    <List className={styles.list}>
                         {StoreListItem(store_items.filter(x => x.is_done), mutate)}
                     </List>
                 </>
