@@ -1,13 +1,18 @@
 'use client'
 import useSWR, { KeyedMutator } from 'swr';
-import { Checkbox, CircularProgress, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Checkbox, CircularProgress, IconButton, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { DeleteForever } from '@mui/icons-material';
 import styles from './page.module.css'
 
 type StoreItem = { item_id: string, name: string, store_id: string, is_done: boolean, price?: number };
 
 function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
     return items.map(x =>
-        <ListItem key={x.item_id}>
+        <ListItem key={x.item_id} secondaryAction={
+            <IconButton aria-label="削除">
+                <DeleteForever />
+            </IconButton>
+        }>
             <ListItemIcon onClick={async () => {
                 // TODO: コンポーネントの外に
                 await put_store_item_state(x.store_id, x.item_id, !x.is_done);
