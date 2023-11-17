@@ -88,6 +88,56 @@ async fn put_store_item_state(
     StatusCode::NO_CONTENT
 }
 
+#[derive(Deserialize)]
+struct StoreItemOrderNumberRequest {
+    destination_item_id: Uuid,
+}
+
+async fn put_store_item_ordernumber(
+    Path((store_id, item_id)): Path<(Uuid, Uuid)>,
+    State(pool): State<PgPool>,
+    Json(StoreItemOrderNumberRequest {
+        destination_item_id,
+    }): Json<StoreItemOrderNumberRequest>,
+) -> StatusCode {
+    // FIXME: 競合しちゃう
+    let (source_order_number,): (i32,) =
+        sqlx::query_as("SELECT order_number FROM store_items WHERE store_id = $1 AND item_id = $2")
+            .bind(store_id)
+            .bind(item_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let (destination_order_number,): (i32,) =
+        sqlx::query_as("SELECT order_number FROM store_items WHERE store_id = $1 AND item_id = $2")
+            .bind(store_id)
+            .bind(destination_item_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    sqlx::query(
+        if destination_order_number>source_order_number{
+            "UPDATE store_items SET order_number=order_number-1 WHERE store_id = $1 AND order_number > $2 AND order_number <= $3"
+        }else{
+            "UPDATE store_items SET order_number=order_number+1 WHERE store_id = $1 AND order_number < $2 AND order_number >= $3"
+        }
+    )
+    .bind(store_id)
+    .bind(source_order_number)
+    .bind(destination_order_number)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE store_items SET order_number=$1 WHERE store_id = $2 AND item_id = $3")
+        .bind(destination_order_number)
+        .bind(store_id)
+        .bind(item_id)
+        .execute(&pool)
+        .await
+        .unwrap();
+    StatusCode::NO_CONTENT
+}
+
 #[tokio::main]
 async fn main() {
     let pool = PgPoolOptions::new()
@@ -103,6 +153,10 @@ async fn main() {
         .route(
             "/stores/:store_id/items/:item_id/state",
             put(put_store_item_state),
+        )
+        .route(
+            "/stores/:store_id/items/:item_id/ordernumber",
+            put(put_store_item_ordernumber),
         )
         .layer(
             // TODO: 全てのパスで同じにしてしまってるので厳密に

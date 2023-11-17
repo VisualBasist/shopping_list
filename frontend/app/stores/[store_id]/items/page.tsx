@@ -12,7 +12,14 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             <IconButton aria-label="削除">
                 <DeleteForever />
             </IconButton>
-        }>
+        }
+            onDragOver={e => e.preventDefault()}
+            onDrop={async e => {
+                const source_item_id = e.dataTransfer.getData("text/plain");
+                await put_store_item_ordernumber(x.store_id, source_item_id, x.item_id);
+                mutate();
+            }}
+        >
             <ListItemIcon onClick={async () => {
                 // TODO: コンポーネントの外に
                 await put_store_item_state(x.store_id, x.item_id, !x.is_done);
@@ -20,7 +27,12 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             }}>
                 <Checkbox edge="start" checked={x.is_done} disableRipple />
             </ListItemIcon>
-            <ListItemText primary={x.name} secondary={x.price && <div><span>単価</span><span>{x.price}</span></div>} />
+            <ListItemText primary={x.name} secondary={x.price && <div><span>単価</span><span>{x.price}</span></div>} draggable onDragStart={
+                e => {
+                    e.dataTransfer.setData("text/plain", x.item_id);
+                    e.dataTransfer.dropEffect = "move";
+                }
+            } />
         </ListItem >);
 }
 
@@ -28,6 +40,14 @@ async function put_store_item_state(store_id: string, item_id: string, is_done: 
     await fetch(`http://localhost:8080/stores/${store_id}/items/${item_id}/state`,
         {
             method: "PUT", body: JSON.stringify({ is_done }),
+            headers: { "Content-Type": "application/json" }
+        });
+}
+
+async function put_store_item_ordernumber(store_id: string, item_id: string, destination_item_id: string) {
+    await fetch(`http://localhost:8080/stores/${store_id}/items/${item_id}/ordernumber`,
+        {
+            method: "PUT", body: JSON.stringify({ destination_item_id }),
             headers: { "Content-Type": "application/json" }
         });
 }
