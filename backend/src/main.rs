@@ -10,6 +10,7 @@ use tower_http::cors::CorsLayer;
 use uuid::Uuid;
 
 #[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 struct Store {
     id: Uuid,
     name: String,
@@ -26,6 +27,7 @@ async fn get_stores(State(pool): State<PgPool>) -> Json<Vec<Store>> {
 }
 
 #[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 struct Item {
     id: Uuid,
     name: String,
@@ -42,6 +44,7 @@ async fn get_items(State(pool): State<PgPool>) -> Json<Vec<Item>> {
 }
 
 #[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 struct StoreItem {
     name: String,
     store_id: Uuid,
@@ -69,6 +72,7 @@ ORDER BY order_number")
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct StoreItemStateRequest {
     is_done: bool,
 }
@@ -89,6 +93,7 @@ async fn put_store_item_state(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct StoreItemOrderNumberRequest {
     destination_item_id: Uuid,
 }

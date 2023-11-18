@@ -5,12 +5,12 @@ import { DeleteForever } from '@mui/icons-material';
 import { useState } from 'react';
 import styles from './page.module.css'
 
-type StoreItem = { item_id: string, name: string, store_id: string, is_done: boolean, price?: number };
+type StoreItem = { itemId: string, name: string, storeId: string, isDone: boolean, price?: number };
 type Item = { id: string, name: string };
 
 function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
     return items.map(x =>
-        <ListItem key={x.item_id} secondaryAction={
+        <ListItem key={x.itemId} secondaryAction={
             <IconButton aria-label="削除">
                 <DeleteForever />
             </IconButton>
@@ -18,20 +18,20 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             onDragOver={e => e.preventDefault()}
             onDrop={async e => {
                 const sourceItemId = e.dataTransfer.getData("text/plain");
-                await putStoreItemOrdernumber(x.store_id, sourceItemId, x.item_id);
+                await putStoreItemOrdernumber(x.storeId, sourceItemId, x.itemId);
                 mutate();
             }}
         >
             <ListItemIcon onClick={async () => {
                 // TODO: コンポーネントの外に
-                await putStoreItemState(x.store_id, x.item_id, !x.is_done);
+                await putStoreItemState(x.storeId, x.itemId, !x.isDone);
                 mutate();
             }}>
-                <Checkbox edge="start" checked={x.is_done} disableRipple />
+                <Checkbox edge="start" checked={x.isDone} disableRipple />
             </ListItemIcon>
             <ListItemText primary={x.name} secondary={x.price && <div><span>単価</span><span>{x.price}</span></div>} draggable onDragStart={
                 e => {
-                    e.dataTransfer.setData("text/plain", x.item_id);
+                    e.dataTransfer.setData("text/plain", x.itemId);
                     e.dataTransfer.dropEffect = "move";
                 }
             } />
@@ -47,11 +47,11 @@ async function sendJsonRequest(path: string, method: 'POST' | 'PUT', body: any) 
 }
 
 async function putStoreItemState(storeId: string, itemId: string, isDone: boolean) {
-    await sendJsonRequest(`stores/${storeId}/items/${itemId}/state`, "PUT", { is_done: isDone });
+    await sendJsonRequest(`stores/${storeId}/items/${itemId}/state`, "PUT", { isDone });
 }
 
 async function putStoreItemOrdernumber(storeId: string, itemId: string, destinationItemId: string) {
-    await sendJsonRequest(`stores/${storeId}/items/${itemId}/ordernumber`, "PUT", { destination_item_id: destinationItemId });
+    await sendJsonRequest(`stores/${storeId}/items/${itemId}/ordernumber`, "PUT", { destinationItemId });
 }
 
 async function postStoreItem(storeId: string, name: string) {
@@ -89,11 +89,11 @@ export default function Page({ params }: { params: { storeId: string } }) {
                     <h1>買う</h1>
                     <ItemAdd items={items} storeId={params.storeId} />
                     <List className={styles.list}>
-                        {StoreListItem(storeItems.filter(x => !x.is_done), mutate)}
+                        {StoreListItem(storeItems.filter(x => !x.isDone), mutate)}
                     </List>
                     <h1>買った</h1>
                     <List className={styles.list}>
-                        {StoreListItem(storeItems.filter(x => x.is_done), mutate)}
+                        {StoreListItem(storeItems.filter(x => x.isDone), mutate)}
                     </List>
                 </>
             }
