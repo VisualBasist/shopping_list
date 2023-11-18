@@ -5,6 +5,7 @@ import { DeleteForever } from '@mui/icons-material';
 import { useState } from 'react';
 import styles from './page.module.css'
 
+type Store = { name: string };
 type StoreItem = { itemId: string, name: string, storeId: string, isDone: boolean, price?: number };
 type Item = { id: string, name: string };
 
@@ -82,10 +83,12 @@ function ItemAdd({ items, storeId, mutate }: { items?: Item[], storeId: string, 
 }
 
 export default function Page({ params }: { params: { storeId: string } }) {
+    const { data: store } = useSWR<Store[], Error>(`http://localhost:8080/stores/${params.storeId}`);
     const { data: storeItems, error, isLoading, mutate } = useSWR<StoreItem[], Error>(`http://localhost:8080/stores/${params.storeId}/items`);
     const { data: items } = useSWR<Item[], Error>(`http://localhost:8080/items`);
     return (
         <main className={styles.main}>
+            <p>{store?.name}</p>
             {error && <p>{error.message}</p>}
             {isLoading && <CircularProgress />}
             {storeItems &&

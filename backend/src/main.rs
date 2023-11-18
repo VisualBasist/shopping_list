@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderValue, StatusCode},
-    routing::{get, post, put, delete},
+    routing::{delete, get, post, put},
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
@@ -22,6 +22,16 @@ async fn get_stores(State(pool): State<PgPool>) -> Json<Vec<Store>> {
             .fetch_all(&pool)
             .await
             // TODO: エラー処理
+            .unwrap(),
+    )
+}
+
+async fn get_store(Path(store_id): Path<Uuid>, State(pool): State<PgPool>) -> Json<Store> {
+    Json(
+        sqlx::query_as("SELECT id, name from stores WHERE id = $1")
+            .bind(store_id)
+            .fetch_one(&pool)
+            .await
             .unwrap(),
     )
 }
@@ -206,6 +216,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/stores", get(get_stores))
+        .route("/stores/:store_id", get(get_store))
         .route("/items", get(get_items))
         .route(
             "/stores/:store_id/items",
