@@ -36,20 +36,20 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
         </ListItem >);
 }
 
-async function put_store_item_state(store_id: string, item_id: string, is_done: boolean) {
-    await fetch(`http://localhost:8080/stores/${store_id}/items/${item_id}/state`,
+async function send_json_request(path: string, method: 'POST' | 'PUT', body: any) {
+    await fetch('http://localhost:8080/' + path,
         {
-            method: "PUT", body: JSON.stringify({ is_done }),
+            method, body: JSON.stringify(body),
             headers: { "Content-Type": "application/json" }
         });
 }
 
+async function put_store_item_state(store_id: string, item_id: string, is_done: boolean) {
+    await send_json_request(`stores/${store_id}/items/${item_id}/state`, "PUT", { is_done });
+}
+
 async function put_store_item_ordernumber(store_id: string, item_id: string, destination_item_id: string) {
-    await fetch(`http://localhost:8080/stores/${store_id}/items/${item_id}/ordernumber`,
-        {
-            method: "PUT", body: JSON.stringify({ destination_item_id }),
-            headers: { "Content-Type": "application/json" }
-        });
+    await send_json_request(`stores/${store_id}/items/${item_id}/ordernumber`, "PUT", { destination_item_id });
 }
 
 export default function Page({ params }: { params: { store_id: string } }) {
