@@ -68,13 +68,14 @@ function ItemAdd({ items, storeId }: { items?: Item[], storeId: string }) {
         <Autocomplete
             freeSolo
             options={items?.map(x => x.name) ?? []}
-            value={itemName}
-            onChange={(_: any, newValue: string | null) => {
-                setItemName(newValue ?? '');
+            inputValue={itemName}
+            onInputChange={(_: any, newValue: string) => {
+                setItemName(newValue);
             }}
             renderInput={(params) => <TextField {...params} />} />
         <Button variant="contained" onClick={async () => {
             await postStoreItem(storeId, itemName);
+            mutate();
             setItemName('');
         }}>登録</Button>
     </>;
