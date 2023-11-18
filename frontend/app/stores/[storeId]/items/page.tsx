@@ -83,7 +83,7 @@ function ItemAdd({ items, storeId, mutate }: { items?: Item[], storeId: string, 
 }
 
 export default function Page({ params }: { params: { storeId: string } }) {
-    const { data: store } = useSWR<Store[], Error>(`http://localhost:8080/stores/${params.storeId}`);
+    const { data: store } = useSWR<Store, Error>(`http://localhost:8080/stores/${params.storeId}`);
     const { data: storeItems, error, isLoading, mutate } = useSWR<StoreItem[], Error>(`http://localhost:8080/stores/${params.storeId}/items`);
     const { data: items } = useSWR<Item[], Error>(`http://localhost:8080/items`);
     return (
