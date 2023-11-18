@@ -17,14 +17,14 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
         }
             onDragOver={e => e.preventDefault()}
             onDrop={async e => {
-                const source_item_id = e.dataTransfer.getData("text/plain");
-                await put_store_item_ordernumber(x.store_id, source_item_id, x.item_id);
+                const sourceItemId = e.dataTransfer.getData("text/plain");
+                await putStoreItemOrdernumber(x.store_id, sourceItemId, x.item_id);
                 mutate();
             }}
         >
             <ListItemIcon onClick={async () => {
                 // TODO: コンポーネントの外に
-                await put_store_item_state(x.store_id, x.item_id, !x.is_done);
+                await putStoreItemState(x.store_id, x.item_id, !x.is_done);
                 mutate();
             }}>
                 <Checkbox edge="start" checked={x.is_done} disableRipple />
@@ -38,7 +38,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
         </ListItem >);
 }
 
-async function send_json_request(path: string, method: 'POST' | 'PUT', body: any) {
+async function sendJsonRequest(path: string, method: 'POST' | 'PUT', body: any) {
     await fetch('http://localhost:8080/' + path,
         {
             method, body: JSON.stringify(body),
@@ -46,16 +46,16 @@ async function send_json_request(path: string, method: 'POST' | 'PUT', body: any
         });
 }
 
-async function put_store_item_state(store_id: string, item_id: string, is_done: boolean) {
-    await send_json_request(`stores/${store_id}/items/${item_id}/state`, "PUT", { is_done });
+async function putStoreItemState(storeId: string, itemId: string, isDone: boolean) {
+    await sendJsonRequest(`stores/${storeId}/items/${itemId}/state`, "PUT", { is_done: isDone });
 }
 
-async function put_store_item_ordernumber(store_id: string, item_id: string, destination_item_id: string) {
-    await send_json_request(`stores/${store_id}/items/${item_id}/ordernumber`, "PUT", { destination_item_id });
+async function putStoreItemOrdernumber(storeId: string, itemId: string, destinationItemId: string) {
+    await sendJsonRequest(`stores/${storeId}/items/${itemId}/ordernumber`, "PUT", { destination_item_id: destinationItemId });
 }
 
 async function postStoreItem(storeId: string, name: string) {
-    await send_json_request(`stores/${storeId}/items`, "POST", { name });
+    await sendJsonRequest(`stores/${storeId}/items`, "POST", { name });
 }
 
 function ItemAdd({ items, storeId }: { items?: Item[], storeId: string }) {
@@ -77,23 +77,23 @@ function ItemAdd({ items, storeId }: { items?: Item[], storeId: string }) {
     </>;
 }
 
-export default function Page({ params }: { params: { store_id: string } }) {
-    const { data: store_items, error, isLoading, mutate } = useSWR<StoreItem[], Error>(`http://localhost:8080/stores/${params.store_id}/items`);
+export default function Page({ params }: { params: { storeId: string } }) {
+    const { data: storeItems, error, isLoading, mutate } = useSWR<StoreItem[], Error>(`http://localhost:8080/stores/${params.storeId}/items`);
     const { data: items } = useSWR<Item[], Error>(`http://localhost:8080/items`);
     return (
         <main className={styles.main}>
             {error && <p>{error.message}</p>}
             {isLoading && <CircularProgress />}
-            {store_items &&
+            {storeItems &&
                 <>
                     <h1>買う</h1>
-                    <ItemAdd items={items} storeId={params.store_id} />
+                    <ItemAdd items={items} storeId={params.storeId} />
                     <List className={styles.list}>
-                        {StoreListItem(store_items.filter(x => !x.is_done), mutate)}
+                        {StoreListItem(storeItems.filter(x => !x.is_done), mutate)}
                     </List>
                     <h1>買った</h1>
                     <List className={styles.list}>
-                        {StoreListItem(store_items.filter(x => x.is_done), mutate)}
+                        {StoreListItem(storeItems.filter(x => x.is_done), mutate)}
                     </List>
                 </>
             }
