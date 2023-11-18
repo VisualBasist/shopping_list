@@ -11,7 +11,10 @@ type Item = { id: string, name: string };
 function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
     return items.map(x =>
         <ListItem key={x.itemId} secondaryAction={
-            <IconButton aria-label="削除">
+            <IconButton aria-label="削除" onClick={async () => {
+                await fetch('http://localhost:8080/' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
+                mutate();
+            }}>
                 <DeleteForever />
             </IconButton>
         }

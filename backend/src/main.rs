@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderValue, StatusCode},
-    routing::{get, post, put},
+    routing::{get, post, put, delete},
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
@@ -183,6 +183,19 @@ async fn post_store_item(
     StatusCode::NO_CONTENT
 }
 
+async fn delete_store_item(
+    Path((store_id, item_id)): Path<(Uuid, Uuid)>,
+    State(pool): State<PgPool>,
+) -> StatusCode {
+    sqlx::query("DELETE from store_items WHERE store_id = $1 AND item_id = $2")
+        .bind(store_id)
+        .bind(item_id)
+        .execute(&pool)
+        .await
+        .unwrap();
+    StatusCode::NO_CONTENT
+}
+
 #[tokio::main]
 async fn main() {
     let pool = PgPoolOptions::new()
@@ -194,8 +207,14 @@ async fn main() {
     let app = Router::new()
         .route("/stores", get(get_stores))
         .route("/items", get(get_items))
-        .route("/stores/:store_id/items", get(get_store_items))
-        .route("/stores/:store_id/items", post(post_store_item))
+        .route(
+            "/stores/:store_id/items",
+            post(post_store_item).get(get_store_items),
+        )
+        .route(
+            "/stores/:store_id/items/:item_id",
+            delete(delete_store_item),
+        )
         .route(
             "/stores/:store_id/items/:item_id/state",
             put(put_store_item_state),
@@ -209,8 +228,9 @@ async fn main() {
             CorsLayer::new()
                 .allow_methods([
                     axum::http::Method::GET,
-                    axum::http::Method::PUT,
                     axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::DELETE,
                 ])
                 .allow_headers([axum::http::header::CONTENT_TYPE])
                 .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap()),
