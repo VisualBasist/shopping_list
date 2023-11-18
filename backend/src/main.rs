@@ -101,18 +101,19 @@ async fn put_store_item_ordernumber(
     }): Json<StoreItemOrderNumberRequest>,
 ) -> StatusCode {
     // FIXME: 競合しちゃう
+    let mut transaction = pool.begin().await.unwrap();
     let (source_order_number,): (i32,) =
         sqlx::query_as("SELECT order_number FROM store_items WHERE store_id = $1 AND item_id = $2")
             .bind(store_id)
             .bind(item_id)
-            .fetch_one(&pool)
+            .fetch_one(&mut *transaction)
             .await
             .unwrap();
     let (destination_order_number,): (i32,) =
         sqlx::query_as("SELECT order_number FROM store_items WHERE store_id = $1 AND item_id = $2")
             .bind(store_id)
             .bind(destination_item_id)
-            .fetch_one(&pool)
+            .fetch_one(&mut *transaction)
             .await
             .unwrap();
     sqlx::query(
@@ -125,16 +126,17 @@ async fn put_store_item_ordernumber(
     .bind(store_id)
     .bind(source_order_number)
     .bind(destination_order_number)
-    .execute(&pool)
+    .execute(&mut *transaction)
     .await
     .unwrap();
     sqlx::query("UPDATE store_items SET order_number=$1 WHERE store_id = $2 AND item_id = $3")
         .bind(destination_order_number)
         .bind(store_id)
         .bind(item_id)
-        .execute(&pool)
+        .execute(&mut *transaction)
         .await
         .unwrap();
+    transaction.commit().await.unwrap();
     StatusCode::NO_CONTENT
 }
 
