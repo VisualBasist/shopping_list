@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderValue, StatusCode},
-    routing::{get, put},
+    routing::{get, post, put},
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
@@ -145,6 +145,44 @@ async fn put_store_item_ordernumber(
     StatusCode::NO_CONTENT
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StoreItemRequest {
+    name: String,
+}
+
+async fn post_store_item(
+    Path(store_id): Path<Uuid>,
+    State(pool): State<PgPool>,
+    Json(StoreItemRequest { name }): Json<StoreItemRequest>,
+) -> StatusCode {
+    let mut transaction = pool.begin().await.unwrap();
+    sqlx::query("INSERT INTO items (id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+        .bind(Uuid::new_v4())
+        .bind(&name)
+        .execute(&mut *transaction)
+        .await
+        .unwrap();
+    let (item_id,): (Uuid,) = sqlx::query_as("SELECT id FROM items WHERE name = $1")
+        .bind(&name)
+        .fetch_one(&mut *transaction)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE store_items set order_number=order_number+1 WHERE store_id = $1")
+        .bind(store_id)
+        .execute(&mut *transaction)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO store_items (store_id, item_id, is_done, order_number) VALUES ($1, $2, false, 1)")
+        .bind(store_id)
+        .bind(item_id)
+        .execute(&mut *transaction)
+        .await
+        .unwrap();
+    transaction.commit().await.unwrap();
+    StatusCode::NO_CONTENT
+}
+
 #[tokio::main]
 async fn main() {
     let pool = PgPoolOptions::new()
@@ -157,6 +195,7 @@ async fn main() {
         .route("/stores", get(get_stores))
         .route("/items", get(get_items))
         .route("/stores/:store_id/items", get(get_store_items))
+        .route("/stores/:store_id/items", post(post_store_item))
         .route(
             "/stores/:store_id/items/:item_id/state",
             put(put_store_item_state),
@@ -168,7 +207,11 @@ async fn main() {
         .layer(
             // TODO: 全てのパスで同じにしてしまってるので厳密に
             CorsLayer::new()
-                .allow_methods([axum::http::Method::GET, axum::http::Method::PUT])
+                .allow_methods([
+                    axum::http::Method::GET,
+                    axum::http::Method::PUT,
+                    axum::http::Method::POST,
+                ])
                 .allow_headers([axum::http::header::CONTENT_TYPE])
                 .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap()),
         )
