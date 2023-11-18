@@ -61,7 +61,7 @@ async function postStoreItem(storeId: string, name: string) {
     await sendJsonRequest(`stores/${storeId}/items`, "POST", { name });
 }
 
-function ItemAdd({ items, storeId }: { items?: Item[], storeId: string }) {
+function ItemAdd({ items, storeId, mutate }: { items?: Item[], storeId: string, mutate: KeyedMutator<any> }) {
     const [itemName, setItemName] = useState('');
 
     return <>
@@ -91,7 +91,7 @@ export default function Page({ params }: { params: { storeId: string } }) {
             {storeItems &&
                 <>
                     <h1>買う</h1>
-                    <ItemAdd items={items} storeId={params.storeId} />
+                    <ItemAdd items={items} storeId={params.storeId} mutate={mutate} />
                     <List className={styles.list}>
                         {StoreListItem(storeItems.filter(x => !x.isDone), mutate)}
                     </List>
