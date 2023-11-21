@@ -33,7 +33,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             }}>
                 <Checkbox edge="start" checked={x.isDone} disableRipple />
             </ListItemIcon>
-            <ListItemText primary={x.name} secondary={x.price && <div><span>単価</span><span>{x.price}</span></div>} draggable onDragStart={
+            <ListItemText primary={x.name} secondary={x.price && <><span>単価</span><span>{x.price}</span></>} draggable onDragStart={
                 e => {
                     e.dataTransfer.setData("text/plain", x.itemId);
                     e.dataTransfer.dropEffect = "move";
