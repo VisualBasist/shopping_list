@@ -2,7 +2,7 @@
 import useSWR, { KeyedMutator } from 'swr';
 import { Autocomplete, Button, Checkbox, CircularProgress, IconButton, List, ListItem, ListItemIcon, ListItemText, TextField } from '@mui/material';
 import { DeleteForever } from '@mui/icons-material';
-import { Dispatch, useState } from 'react';
+import { useState } from 'react';
 import styles from './page.module.css'
 
 type Store = { name: string };
