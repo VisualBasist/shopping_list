@@ -41,7 +41,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
                 e.dataTransfer.dropEffect = "move";
             }
             }
-                sx={{ touchAction: 'none' }}
+                sx={{ touchAction: 'none', cursor: 'move' }}
                 onTouchEnd={async e => {
                     const changedTouche = e.changedTouches[0];
                     const destinationElement = (document.elementsFromPoint(changedTouche.clientX, changedTouche.clientY) as HTMLElement[]).find(x => x.dataset.itemId);
