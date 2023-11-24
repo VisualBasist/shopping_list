@@ -18,7 +18,7 @@ struct Store {
 
 async fn get_stores(State(pool): State<PgPool>) -> Json<Vec<Store>> {
     Json(
-        sqlx::query_as("SELECT * from stores")
+        sqlx::query_as("SELECT id, name from stores")
             .fetch_all(&pool)
             .await
             // TODO: エラー処理
@@ -45,7 +45,7 @@ struct Item {
 
 async fn get_items(State(pool): State<PgPool>) -> Json<Vec<Item>> {
     Json(
-        sqlx::query_as("SELECT * from items")
+        sqlx::query_as("SELECT id, name from items")
             .fetch_all(&pool)
             .await
             // TODO: エラー処理
