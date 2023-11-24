@@ -4,6 +4,7 @@ import { Autocomplete, Button, Checkbox, CircularProgress, IconButton, List, Lis
 import { DeleteForever } from '@mui/icons-material';
 import { useState } from 'react';
 import styles from './page.module.css'
+import Link from 'next/link';
 
 type Store = { name: string };
 type StoreItem = { itemId: string, name: string, storeId: string, isDone: boolean, price?: number };
@@ -36,7 +37,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             }}>
                 <Checkbox edge="start" checked={x.isDone} disableRipple />
             </ListItemIcon>
-            <ListItemText primary={x.name} secondary={x.price && <><span>単価</span><span>{x.price}</span></>} draggable onDragStart={e => {
+            <ListItemText primary={<Link href={`/stores/${x.storeId}/items/${x.itemId}`}>{x.name}</Link>} secondary={x.price && <><span>単価</span><span>{x.price}</span></>} draggable onDragStart={e => {
                 e.dataTransfer.setData("text/plain", x.itemId);
                 e.dataTransfer.dropEffect = "move";
             }
