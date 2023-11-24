@@ -80,7 +80,7 @@ function ItemAdd({ items, storeId, mutate }: { items: Item[], storeId: string, m
     return <>
         <Autocomplete
             freeSolo
-            options={items.map(x => x.name) ?? []}
+            options={items.map(x => x.name)}
             inputValue={itemName}
             onInputChange={(_: any, newValue: string) => {
                 setItemName(newValue);
