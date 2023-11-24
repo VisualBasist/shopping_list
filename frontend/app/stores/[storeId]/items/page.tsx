@@ -2,7 +2,7 @@
 import useSWR, { KeyedMutator } from 'swr';
 import { Autocomplete, Button, Checkbox, CircularProgress, IconButton, List, ListItem, ListItemIcon, ListItemText, TextField } from '@mui/material';
 import { DeleteForever } from '@mui/icons-material';
-import { useState } from 'react';
+import { Dispatch, useState } from 'react';
 import styles from './page.module.css'
 
 type Store = { name: string };
@@ -11,14 +11,17 @@ type Item = { id: string, name: string };
 
 function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
     return items.map(x =>
-        <ListItem key={x.itemId} secondaryAction={
-            <IconButton aria-label="削除" onClick={async () => {
-                await fetch('http://localhost:8080/' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
-                mutate();
-            }}>
-                <DeleteForever />
-            </IconButton>
-        }
+        <ListItem
+            key={x.itemId}
+            data-item-id={x.itemId}
+            secondaryAction={
+                <IconButton aria-label="削除" onClick={async () => {
+                    await fetch('http://localhost:8080/' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
+                    mutate();
+                }}>
+                    <DeleteForever />
+                </IconButton>
+            }
             onDragOver={e => e.preventDefault()}
             onDrop={async e => {
                 const sourceItemId = e.dataTransfer.getData("text/plain");
@@ -33,12 +36,21 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             }}>
                 <Checkbox edge="start" checked={x.isDone} disableRipple />
             </ListItemIcon>
-            <ListItemText primary={x.name} secondary={x.price && <><span>単価</span><span>{x.price}</span></>} draggable onDragStart={
-                e => {
-                    e.dataTransfer.setData("text/plain", x.itemId);
-                    e.dataTransfer.dropEffect = "move";
-                }
-            } />
+            <ListItemText primary={x.name} secondary={x.price && <><span>単価</span><span>{x.price}</span></>} draggable onDragStart={e => {
+                e.dataTransfer.setData("text/plain", x.itemId);
+                e.dataTransfer.dropEffect = "move";
+            }
+            }
+                sx={{ touchAction: 'none' }}
+                onTouchEnd={async e => {
+                    const changedTouche = e.changedTouches[0];
+                    const destinationElement = (document.elementsFromPoint(changedTouche.clientX, changedTouche.clientY) as HTMLElement[]).find(x => x.dataset.itemId);
+                    if (destinationElement != null) {
+                        await putStoreItemOrdernumber(x.storeId, x.itemId, destinationElement.dataset.itemId!);
+                        mutate();
+                    }
+                }}
+            />
         </ListItem >);
 }
 
