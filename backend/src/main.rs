@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderValue, StatusCode},
-    routing::{delete, get, post, put},
+    routing::{get, post, put},
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
@@ -81,6 +81,23 @@ ORDER BY order_number")
     )
 }
 
+async fn get_store_item(
+    Path((store_id, item_id)): Path<(Uuid, Uuid)>,
+    State(pool): State<PgPool>,
+) -> Json<StoreItem> {
+    Json(
+        sqlx::query_as("SELECT items.name, store_items.store_id, store_items.item_id, store_items.is_done, store_items.price
+FROM store_items
+JOIN items ON items.id = store_items.item_id
+WHERE store_id = $1 AND item_id = $2")
+            .bind(store_id)
+            .bind(item_id)
+            .fetch_one(&pool)
+            .await
+            // TODO: エラー処理
+            .unwrap(),
+    )
+}
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct StoreItemStateRequest {
@@ -224,7 +241,7 @@ async fn main() {
         )
         .route(
             "/stores/:store_id/items/:item_id",
-            delete(delete_store_item),
+            get(get_store_item).delete(delete_store_item),
         )
         .route(
             "/stores/:store_id/items/:item_id/state",
