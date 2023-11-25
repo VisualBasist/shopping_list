@@ -101,17 +101,15 @@ export default function Page({ params }: { params: { storeId: string } }) {
     const { data: items } = useSWR<Item[], Error>(`http://localhost:8080/items`);
     return (
         <main className={styles.main}>
-            <p>{store?.name}</p>
+            <h1>{store?.name}</h1>
             {error && <p>{error.message}</p>}
             {isLoading && <CircularProgress />}
             {storeItems &&
                 <>
-                    <h1>買う</h1>
                     <ItemAdd items={items ?? []} storeId={params.storeId} mutate={mutate} />
                     <List className={styles.list}>
                         {StoreListItem(storeItems.filter(x => !x.isDone), mutate)}
                     </List>
-                    <h1>買った</h1>
                     <List className={styles.list}>
                         {StoreListItem(storeItems.filter(x => x.isDone), mutate)}
                     </List>
