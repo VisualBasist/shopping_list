@@ -261,7 +261,12 @@ async fn main() {
                     axum::http::Method::DELETE,
                 ])
                 .allow_headers([axum::http::header::CONTENT_TYPE])
-                .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap()),
+                .allow_origin(
+                    dotenvy::var("FRONTEND_SERVER_ORIGIN")
+                        .expect("FRONTEND_SERVER_ORIGINが必要")
+                        .parse::<HeaderValue>()
+                        .unwrap(),
+                ),
         )
         .with_state(pool);
 
