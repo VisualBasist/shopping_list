@@ -1,58 +1,61 @@
 'use client'
 import useSWR, { KeyedMutator } from 'swr';
-import { Autocomplete, Button, Checkbox, CircularProgress, IconButton, List, ListItem, ListItemIcon, ListItemText, TextField } from '@mui/material';
+import { Autocomplete, Button, Card, Checkbox, CircularProgress, IconButton, List, ListItem, ListItemIcon, ListItemText, TextField } from '@mui/material';
 import { DeleteForever } from '@mui/icons-material';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css'
-import Link from 'next/link';
 
 type Store = { name: string };
 type StoreItem = { itemId: string, name: string, storeId: string, isDone: boolean, price?: number };
 type Item = { id: string, name: string };
 
 function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
+    const router = useRouter();
     return items.map(x =>
-        <ListItem
-            key={x.itemId}
-            data-item-id={x.itemId}
-            secondaryAction={
-                <IconButton aria-label="削除" onClick={async () => {
-                    await fetch('http://localhost:8080/' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
+        <Card key={x.itemId}>
+            <ListItem
+                data-item-id={x.itemId}
+                secondaryAction={
+                    <IconButton aria-label="削除" onClick={async () => {
+                        await fetch('http://localhost:8080/' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
+                        mutate();
+                    }}>
+                        <DeleteForever />
+                    </IconButton>
+                }
+                onDragOver={e => e.preventDefault()}
+                onDrop={async e => {
+                    const sourceItemId = e.dataTransfer.getData("text/plain");
+                    await putStoreItemOrdernumber(x.storeId, sourceItemId, x.itemId);
+                    mutate();
+                }}
+            >
+                <ListItemIcon onClick={async () => {
+                    // TODO: コンポーネントの外に
+                    await putStoreItemState(x.storeId, x.itemId, !x.isDone);
                     mutate();
                 }}>
-                    <DeleteForever />
-                </IconButton>
-            }
-            onDragOver={e => e.preventDefault()}
-            onDrop={async e => {
-                const sourceItemId = e.dataTransfer.getData("text/plain");
-                await putStoreItemOrdernumber(x.storeId, sourceItemId, x.itemId);
-                mutate();
-            }}
-        >
-            <ListItemIcon onClick={async () => {
-                // TODO: コンポーネントの外に
-                await putStoreItemState(x.storeId, x.itemId, !x.isDone);
-                mutate();
-            }}>
-                <Checkbox edge="start" checked={x.isDone} disableRipple />
-            </ListItemIcon>
-            <ListItemText primary={<Link href={`/stores/${x.storeId}/items/${x.itemId}`}>{x.name}</Link>} secondary={x.price && <><span>{x.price}</span><span className={styles.unit}>円</span></>} draggable onDragStart={e => {
-                e.dataTransfer.setData("text/plain", x.itemId);
-                e.dataTransfer.dropEffect = "move";
-            }
-            }
-                sx={{ touchAction: 'none', cursor: 'move' }}
-                onTouchEnd={async e => {
-                    const changedTouche = e.changedTouches[0];
-                    const destinationElement = (document.elementsFromPoint(changedTouche.clientX, changedTouche.clientY) as HTMLElement[]).find(x => x.dataset.itemId);
-                    if (destinationElement != null) {
-                        await putStoreItemOrdernumber(x.storeId, x.itemId, destinationElement.dataset.itemId!);
-                        mutate();
-                    }
-                }}
-            />
-        </ListItem >);
+                    <Checkbox edge="start" checked={x.isDone} disableRipple />
+                </ListItemIcon>
+                <ListItemText primary={x.name} secondary={x.price && <><span>{x.price}</span><span className={styles.unit}>円</span></>} draggable onDragStart={e => {
+                    e.dataTransfer.setData("text/plain", x.itemId);
+                    e.dataTransfer.dropEffect = "move";
+                }
+                }
+                    onClick={() => router.push(`/stores/${x.storeId}/items/${x.itemId}`)}
+                    sx={{ touchAction: 'none' }}
+                    onTouchEnd={async e => {
+                        const changedTouche = e.changedTouches[0];
+                        const destinationElement = (document.elementsFromPoint(changedTouche.clientX, changedTouche.clientY) as HTMLElement[]).find(x => x.dataset.itemId);
+                        if (destinationElement != null) {
+                            await putStoreItemOrdernumber(x.storeId, x.itemId, destinationElement.dataset.itemId!);
+                            mutate();
+                        }
+                    }}
+                />
+            </ListItem >
+        </Card>);
 }
 
 async function sendJsonRequest(path: string, method: 'POST' | 'PUT', body: any) {

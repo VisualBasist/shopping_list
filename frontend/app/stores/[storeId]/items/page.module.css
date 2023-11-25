@@ -5,6 +5,9 @@
 
 .list {
   max-width: 20rem;
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
 }
 
 .unit {
