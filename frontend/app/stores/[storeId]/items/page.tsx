@@ -18,7 +18,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
                 data-item-id={x.itemId}
                 secondaryAction={
                     <IconButton aria-label="削除" onClick={async () => {
-                        await fetch('http://localhost:8080/' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
+                        await fetch('' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
                         mutate();
                     }}>
                         <DeleteForever />
@@ -59,7 +59,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
 }
 
 async function sendJsonRequest(path: string, method: 'POST' | 'PUT', body: any) {
-    await fetch('http://localhost:8080/' + path,
+    await fetch('' + path,
         {
             method, body: JSON.stringify(body),
             headers: { "Content-Type": "application/json" }
@@ -99,9 +99,9 @@ function ItemAdd({ items, storeId, mutate }: { items: Item[], storeId: string, m
 }
 
 export default function Page({ params }: { params: { storeId: string } }) {
-    const { data: store } = useSWR<Store, Error>(`http://localhost:8080/stores/${params.storeId}`);
-    const { data: storeItems, error, isLoading, mutate } = useSWR<StoreItem[], Error>(`http://localhost:8080/stores/${params.storeId}/items`);
-    const { data: items } = useSWR<Item[], Error>(`http://localhost:8080/items`);
+    const { data: store } = useSWR<Store, Error>(`stores/${params.storeId}`);
+    const { data: storeItems, error, isLoading, mutate } = useSWR<StoreItem[], Error>(`stores/${params.storeId}/items`);
+    const { data: items } = useSWR<Item[], Error>(`items`);
     return (
         <main className={styles.main}>
             <h1>{store?.name}</h1>

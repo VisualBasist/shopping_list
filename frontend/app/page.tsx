@@ -7,7 +7,7 @@ import { CircularProgress } from '@mui/material';
 type Store = { id: string, name: string };
 
 export default function Home() {
-  const { data: stores, error, isLoading } = useSWR<Store[]>('http://localhost:8080/stores');
+  const { data: stores, error, isLoading } = useSWR<Store[]>('stores');
   return (
     <main className={styles.main}>
       {error && <p>{error.message}</p>}
