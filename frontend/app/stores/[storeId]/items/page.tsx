@@ -45,15 +45,6 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
                 }
                 }
                     onClick={() => router.push(`/stores/${x.storeId}/items/${x.itemId}`)}
-                    sx={{ touchAction: 'none' }}
-                    onTouchEnd={async e => {
-                        const changedTouche = e.changedTouches[0];
-                        const destinationElement = (document.elementsFromPoint(changedTouche.clientX, changedTouche.clientY) as HTMLElement[]).find(x => x.dataset.itemId);
-                        if (destinationElement != null) {
-                            await putStoreItemOrdernumber(x.storeId, x.itemId, destinationElement.dataset.itemId!);
-                            mutate();
-                        }
-                    }}
                 />
             </ListItem >
         </Card>);
