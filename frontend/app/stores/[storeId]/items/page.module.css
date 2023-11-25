@@ -3,6 +3,10 @@
   flex-direction: column;
 }
 
-.list{
+.list {
   max-width: 20rem;
+}
+
+.unit {
+  font-size: .7rem;
 }

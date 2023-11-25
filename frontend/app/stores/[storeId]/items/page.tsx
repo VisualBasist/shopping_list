@@ -37,7 +37,7 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
             }}>
                 <Checkbox edge="start" checked={x.isDone} disableRipple />
             </ListItemIcon>
-            <ListItemText primary={<Link href={`/stores/${x.storeId}/items/${x.itemId}`}>{x.name}</Link>} secondary={x.price && <><span>単価</span><span>{x.price}</span></>} draggable onDragStart={e => {
+            <ListItemText primary={<Link href={`/stores/${x.storeId}/items/${x.itemId}`}>{x.name}</Link>} secondary={x.price && <><span>{x.price}</span><span className={styles.unit}>円</span></>} draggable onDragStart={e => {
                 e.dataTransfer.setData("text/plain", x.itemId);
                 e.dataTransfer.dropEffect = "move";
             }
