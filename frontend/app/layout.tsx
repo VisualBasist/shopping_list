@@ -7,7 +7,7 @@ const font = BIZ_UDPGothic({ weight: '400', subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: '買い物リスト',
-  description: '買い物に便利な買い',
+  description: '買い物に便利な買い物リスト',
 }
 
 export default function RootLayout({
