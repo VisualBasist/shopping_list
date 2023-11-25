@@ -18,7 +18,8 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
                 data-item-id={x.itemId}
                 secondaryAction={
                     <IconButton aria-label="削除" onClick={async () => {
-                        await fetch('' + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
+                        // TODO: まとめる
+                        await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `stores/${x.storeId}/items/${x.itemId}`, { method: "DELETE" });
                         mutate();
                     }}>
                         <DeleteForever />
@@ -59,7 +60,8 @@ function StoreListItem(items: StoreItem[], mutate: KeyedMutator<StoreItem[]>) {
 }
 
 async function sendJsonRequest(path: string, method: 'POST' | 'PUT', body: any) {
-    await fetch('' + path,
+    // TODO: まとめる
+    await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + path,
         {
             method, body: JSON.stringify(body),
             headers: { "Content-Type": "application/json" }
