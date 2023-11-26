@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { BIZ_UDPGothic } from 'next/font/google'
 import './globals.css'
 import { SWRProvider } from './swr-provider'
+import { DarkThemeProvider } from './dark-theme-provider';
 
 const font = BIZ_UDPGothic({ weight: '400', subsets: ['latin'] });
 
@@ -17,9 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <SWRProvider>
-      <html lang="ja">
-        <body className={font.className}>{children}</body>
-      </html>
+      <DarkThemeProvider>
+        <html lang="ja">
+          <body className={font.className}>{children}</body>
+        </html>
+      </DarkThemeProvider>
     </SWRProvider>
   )
 }
